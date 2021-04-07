@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
   let applePosition = { x: -10, y: -10 }; //domyślnie na początku jabłko poza planszą
   let inter; //zmienna dla setInterval
   const startBtn = document.querySelector(".startBtn");
+  let szachownica = [];
   //stałe do css
   const infoArrrow = document.querySelector(".arrow");
   infoArrrow.innerHTML = "ArrowRight";
@@ -64,20 +65,55 @@ document.addEventListener("DOMContentLoaded", (e) => {
 
   //rysowanie planszy
   function drawBoard() {
-    let i = 20;
-    ctx.beginPath();
-    while (i < 400) {
-      ctx.moveTo(0, i);
-      ctx.lineTo(400, i);
-      i += 20;
+    // ctx.beginPath();
+    // let i = 20;
+    // while (i < 400) {
+    //   ctx.moveTo(0, i);
+    //   ctx.lineTo(400, i);
+    //   i += 20;
+    // }
+    // i = 20;
+    // while (i < 400) {
+    //   ctx.moveTo(i, 0);
+    //   ctx.lineTo(i, 400);
+    //   i += 20;
+    // }
+    // ctx.stroke(); //po zakończeniu rysowania obrysowujemy linię
+
+    ctx.fillStyle = "grey";
+    let i = 0;
+    while (i < 20) {
+      let j = 0;
+      while (j < 20) {
+        if (i % 2 == 0) {
+          if (j % 2 == 0) {
+            ctx.fillStyle = "grey";
+            ctx.fillRect(i * 20, j * 20, 20, 20);
+            szachownica.push({ x: i * 20, y: j * 20, color: "grey" });
+          } else {
+            ctx.fillStyle = "white";
+            ctx.fillRect(i * 20, j * 20, 20, 20);
+            szachownica.push({ x: i * 20, y: j * 20, color: "white" });
+          }
+        } else {
+          if (j % 2 != 0) {
+            ctx.fillStyle = "grey";
+            ctx.fillRect(i * 20, j * 20, 20, 20);
+            szachownica.push({ x: i * 20, y: j * 20, color: "grey" });
+          } else {
+            ctx.fillStyle = "white";
+            ctx.fillRect(i * 20, j * 20, 20, 20);
+            szachownica.push({ x: i * 20, y: j * 20, color: "white" });
+          }
+        }
+        j++;
+      }
+      i++;
     }
-    i = 20;
-    while (i < 400) {
-      ctx.moveTo(i, 0);
-      ctx.lineTo(i, 400);
-      i += 20;
-    }
-    ctx.stroke(); //po zakończeniu rysowania obrysowujemy linię
+
+    // for (let i = 0; i < arr.length; i++) {
+    //   ctx.fillRect(arr[i].x, arr[i].y, 20, 20);
+    // }
   }
   //czyszczenie planszy
   function clearBoard() {
@@ -134,7 +170,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
     ctx.fillStyle = "red";
     ctx.fillRect(applePosition.x * 20 - 2, applePosition.y * 20 - 2, 24, 24);
   }
-  //sprawdzanie warunków przegranej
+  //sprawdzanie warunków
   function checkConditions() {
     //zbieranie jabłka
     if (
@@ -145,16 +181,61 @@ document.addEventListener("DOMContentLoaded", (e) => {
       arr.unshift(tempItem);
       appleExist = false;
     }
-    //wyjście poza plansze
-    else if (
-      arr[arr.length - 1].x >= 400 ||
-      arr[arr.length - 1].x < 0 ||
-      arr[arr.length - 1].y >= 400 ||
-      arr[arr.length - 1].y < 0
-    ) {
-      resetGame();
+    //wyjście poza plansze, zmiana orientacji węża
+    else if (arr[arr.length - 1].x >= 400) {
+      szachownica = szachownica.filter((e) => {
+        if (arr[arr.length - 2].x == e.x && arr[arr.length - 2].y == e.y) {
+          return true;
+        }
+      });
+      if (szachownica[0].color == "grey") {
+        resetGame();
+      } else {
+        arr[arr.length - 1].x = arr[arr.length - 1].y;
+        arr[arr.length - 1].y = 400;
+        direction.toSet = "UP";
+      }
+    } else if (arr[arr.length - 1].x < 0) {
+      szachownica = szachownica.filter((e) => {
+        if (arr[arr.length - 2].x == e.x && arr[arr.length - 2].y == e.y) {
+          return true;
+        }
+      });
+      if (szachownica[0].color == "grey") {
+        resetGame();
+      } else {
+        arr[arr.length - 1].x = arr[arr.length - 1].y;
+        arr[arr.length - 1].y = -20;
+        direction.toSet = "DOWN";
+      }
+    } else if (arr[arr.length - 1].y >= 400) {
+      szachownica = szachownica.filter((e) => {
+        if (arr[arr.length - 2].x == e.x && arr[arr.length - 2].y == e.y) {
+          return true;
+        }
+      });
+      if (szachownica[0].color == "grey") {
+        resetGame();
+      } else {
+        arr[arr.length - 1].y = arr[arr.length - 1].x;
+        arr[arr.length - 1].x = -20;
+        direction.toSet = "RIGHT";
+      }
+    } else if (arr[arr.length - 1].y < 0) {
+      szachownica = szachownica.filter((e) => {
+        if (arr[arr.length - 2].x == e.x && arr[arr.length - 2].y == e.y) {
+          return true;
+        }
+      });
+      if (szachownica[0].color == "grey") {
+        resetGame();
+      } else {
+        arr[arr.length - 1].y = arr[arr.length - 1].x;
+        arr[arr.length - 1].x = 400;
+        direction.toSet = "LEFT";
+      }
     }
-    //przecięcie węża
+    //przecięcie węża, jeśli tak przegrana
     for (let i = 0; i < arr.length - 2; i++) {
       if (
         arr[arr.length - 1].x == arr[i].x &&
@@ -182,6 +263,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
   }
 
   function startGame() {
+    console.log(szachownica);
     inter = setInterval(() => {
       clearBoard();
       drawBoard();
@@ -189,6 +271,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
       moveSnake();
       drawSnake();
       checkConditions();
+      szachownica = [];
     }, 400);
   }
 
